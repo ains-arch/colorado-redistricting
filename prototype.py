@@ -12,7 +12,7 @@ from gerrychain.accept import always_accept
 
 # State: Colorado
 # Set path to shapefile
-PATH = "data/co_precincts.shp"
+PATH = "data/2018_precincts/co_precincts.shp"
 
 # Dual graph from shapefile
 print("Graph")
@@ -166,7 +166,7 @@ our_random_walk = MarkovChain(
         constraints = [population_constraint],
         accept = always_accept, # accepts every proposed plan that meets population criteria
         initial_state = initial_partition,
-        total_steps = 10000 # change to 10000 for prod
+        total_steps = 100 # change to 10000 for prod
         )
 
 # Run the random walk
