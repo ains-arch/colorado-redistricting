@@ -74,7 +74,7 @@ print("\nSaved figs/hispanic.png")
 # Add Democratic votes percentage in 2018 US House race to the geodataframe
 gdf['dem_perc'] = gdf["USH18D"]/gdf[["USH18D", "USH18R"]].sum(axis=1)
 
-# Plot the Democratic votes percentage
+# Plot the partisan distribution
 plt.figure()
 ax = gdf.plot(column = 'dem_perc', cmap = 'seismic_r', vmin=0, vmax=1)
 sm = plt.cm.ScalarMappable(cmap='seismic_r', norm=plt.Normalize(vmin=0, vmax=1)) # Custom legend
@@ -85,8 +85,8 @@ cbar.set_ticks([0, 1])  # Position tick labels at 0 (Republican) and 1 (Democrat
 cbar.set_ticklabels(['Republican', 'Democratic'])  # Set custom labels
 plt.axis('off') # To suppress axes in the map plot
 plt.title('Votes for US House in 2018 Midterms', fontsize=14)
-plt.savefig("figs/dem.png")
-print("Saved figs/dem.png\n")
+plt.savefig("figs/party.png")
+print("Saved figs/party.png\n")
 
 # Redefine new graph object with the hisp_perc and dem_perc columns
 # print("Loading updated graph...")
@@ -173,167 +173,190 @@ print("Setting up ensemble..")
 NUM_DIST = 7 # for the seven Congressional districts Colorado had in 2018
 ideal_pop = totpop/NUM_DIST
 POP_TOLERANCE = 0.02
-initial_plan = recursive_tree_part(graph,
-                                   range(NUM_DIST),
-                                   ideal_pop,
-                                   'TOTPOP',
-                                   POP_TOLERANCE,
-                                   10)
 
-# Get lat/lon from shapefile geometry to be fed into nx.draw
-node_locations = {
-    v: (
-        gdf.loc[v, 'geometry'].centroid.x,  # Longitude (x-coordinate)
-        gdf.loc[v, 'geometry'].centroid.y   # Latitude (y-coordinate)
-    )
-    for v in graph.nodes()
-}
+def run_random_walk(enacted = True):
+    if enacted:
+        flag = "enacted"
+        initial_plan = "CD116FP"
+    else:
+        flag = "random"
+        initial_plan = recursive_tree_part(graph,
+                                           range(NUM_DIST),
+                                           ideal_pop,
+                                           'TOTPOP',
+                                           POP_TOLERANCE,
+                                           10)
 
-# Set up partition object
-initial_partition = Partition(
-    graph, # dual graph
-    assignment = initial_plan, # initial districting plan
-    updaters = {
-        "cutedges": cut_edges, 
-        "population": Tally("TOTPOP", alias = "population"), 
-        "Hispanic population": Tally("HISP", alias = "Hispanic population"),
-        "R votes": Tally("USH18R", alias = "R votes"),
-        "D votes": Tally("USH18D", alias = "D votes")
+    # Get lat/lon from shapefile geometry to be fed into nx.draw
+    node_locations = {
+        v: (
+            gdf.loc[v, 'geometry'].centroid.x,  # Longitude (x-coordinate)
+            gdf.loc[v, 'geometry'].centroid.y   # Latitude (y-coordinate)
+        )
+        for v in graph.nodes()
     }
-)
+    
+    # Set up partition object
+    initial_partition = Partition(
+        graph, # dual graph
+        assignment = initial_plan, # initial districting plan
+        updaters = {
+            "cutedges": cut_edges, 
+            "population": Tally("TOTPOP", alias = "population"), 
+            "Hispanic population": Tally("HISP", alias = "Hispanic population"),
+            "R votes": Tally("USH18R", alias = "R votes"),
+            "D votes": Tally("USH18D", alias = "D votes")
+        }
+    )
+    
+    # Set up random walk
+    rw_proposal = partial(recom,                   # How you choose a next districting plan
+                          pop_col = "TOTPOP",      # What data describes population
+                          pop_target = ideal_pop,  # Target/ideal population is for each district
+                          epsilon = POP_TOLERANCE, # How far from ideal population you can deviate
+                          node_repeats = 1         # Number of times to repeat bipartition.
+                          )
+    
+    # Set up population constraint
+    population_constraint = constraints.within_percent_of_ideal_population(
+            initial_partition,
+            POP_TOLERANCE,
+            pop_key = "population"
+            )
+    
+    # Set up the chain
+    our_random_walk = MarkovChain(
+            proposal = rw_proposal,
+            constraints = [population_constraint],
+            accept = always_accept, # accepts every proposed plan that meets population criteria
+            initial_state = initial_partition,
+            total_steps = 10000 # change to 10000 for prod
+            )
+    
+    # Run the random walk
+    print(f"Running random walk from {flag} start...")
+    cutedge_ensemble = []
+    if flag == "enacted": # Skip calculating Hispanic and Democratic ensembles for random start
+        h30_ensemble = []
+        d_ensemble = []
+    
+    for part in our_random_walk:
+        # Add cutedges to cutedges ensemble
+        cutedge_ensemble.append(len(part["cutedges"]))
+    
+        if flag == "enacted": # Run the full ensemble for the enacted plan
+            hisp_30 = 0
+            d_votes = 0
 
-# Set up random walk
-rw_proposal = partial(recom,                   # How you choose a next districting plan
-                      pop_col = "TOTPOP",      # What data describes population
-                      pop_target = ideal_pop,  # Target/ideal population is for each district
-                      epsilon = POP_TOLERANCE, # How far from ideal population you can deviate
-                      node_repeats = 1         # Number of times to repeat bipartition.
-                      )
+            for district in part.parts:
+                # 30%+ Hispanic districts from US Census
+                h_perc = part["Hispanic population"][district]/part["population"][district]
+                if h_perc > 0.3:
+                    hisp_30 += 1
 
-# Set up population constraint
-population_constraint = constraints.within_percent_of_ideal_population(
-        initial_partition,
-        POP_TOLERANCE,
-        pop_key = "population"
-        )
+                # Districts with more D votes than R votes in 2018 US House race
+                if part["D votes"][district] > part["R votes"][district]:
+                    d_votes += 1
 
-# Set up the chain
-our_random_walk = MarkovChain(
-        proposal = rw_proposal,
-        constraints = [population_constraint],
-        accept = always_accept, # accepts every proposed plan that meets population criteria
-        initial_state = initial_partition,
-        total_steps = 100 # change to 10000 for prod
-        )
+            h30_ensemble.append(hisp_30)
+            d_ensemble.append(d_votes)
+    
+    print("Random walk complete.\n")
+    
+    # Histogram of number of cutedges in 2018 voting precincts
+    plt.figure()
+    plt.hist(cutedge_ensemble, edgecolor='black', color='purple')
+    plt.xlabel("Cutedges", fontsize=12)
+    plt.ylabel("Ensembles", fontsize=12)
+    plt.suptitle("Cutedges in 2018 Voting Precincts",
+              fontsize=14)
+    plt.title(f"from {flag} start")
+    plt.xlim(400, 850)  # Set x and y ranges so enacted-start and random-start ensembles
+    plt.ylim(0, 3000)   # Are one-to-one comparisons
+    plt.axvline(x=cutedges_enacted, color='orange', linestyle='--', linewidth=2,
+                label=f"Enacted plan's cutedges = {cutedges_enacted}")
+    plt.legend()
+    plt.savefig(f"figs/histogram-cutedges-from-{flag}.png")
+    print(f"Saved figs/histogram-cutedges-from-{flag}.png")
+    if flag == "random":
+        print("Random initial plan complete, terminating visualization early.")
+        return
+    
+    # Histogram of number of Hispanic-30%+ districts from 2010 Census numbers
+    plt.figure()
+    plt.hist(h30_ensemble)
+    plt.savefig("figs/histogram-hispanic.png")
+    print("Saved figs/histogram-hispanic.png")
+    
+    # Specify boundaries between bins to make plot look a bit nicer
+    plt.figure()
+    plt.hist(h30_ensemble, bins=[-0.5, 0.5, 1.5, 2.5], edgecolor='black', color='orange')
+    plt.xticks([0, 1, 2])
+    plt.xlabel("Districts", fontsize=12)
+    plt.ylabel("Ensembles", fontsize=12)
+    plt.axvline(x=hisp_30_enacted, color='blue', linestyle='--', linewidth=2,
+                label=f"Enacted plan's Hispanic population = {hisp_30_enacted}")
+    plt.legend()
+    plt.title("Districts with >30% Hispanic Population in 2010 Census",
+              fontsize=14)
+    plt.savefig("figs/histogram-hispanic-clean.png")
+    print("Saved figs/histogram-hispanic-clean.png. You should double check the bins.")
+    
+    # Histogram of number of Democratic districts in US House race
+    plt.figure()
+    plt.hist(d_ensemble)
+    plt.savefig("figs/histogram-democrats.png")
+    print("Saved figs/histogram-democrats.png")
+    
+    # Specify boundaries between bins to make plot look a bit nicer
+    plt.figure()
+    plt.hist(d_ensemble, bins=[2.5, 3.5, 4.5, 5.5, 6.5], edgecolor='black', color='blue')
+    plt.xticks([3, 4, 5, 6])
+    plt.xlabel("Districts", fontsize=12)
+    plt.ylabel("Ensembles", fontsize=12)
+    plt.axvline(x=d_votes_enacted, color='orange', linestyle='--', linewidth=2,
+                label=f"Enacted plan's Democratic districts = {d_votes_enacted}")
+    plt.legend()
+    plt.title("Democratic Districts in the 2018 Midterm Elections", fontsize=14)
+    plt.savefig("figs/histogram-democrats-clean.png")
+    print("Saved figs/histogram-democrats-clean.png. You should double check the bins.\n")
+    
+    # TODO: make boxplots
+    # TODO: make a series of histograms to show approaching stationary distribution
+    # TODO: change the coordinate reference system in the geodataframe
+    # TODO: run once from enacted plan and once from random plan
 
-# Run the random walk
-print("Running random walk...")
-cutedge_ensemble = []
-h30_ensemble = []
-d_ensemble = []
-
-for part in our_random_walk:
-    # Add cutedges to cutedges ensemble
-    cutedge_ensemble.append(len(part["cutedges"]))
-
-    # 30%+ Hispanic districts from US Census
-    hisp_30 = 0
-    for i in range(NUM_DIST):
-        h_perc = part["Hispanic population"][i]/part["population"][i]
-        if h_perc > 0.3:
-            hisp_30 += 1
-    h30_ensemble.append(hisp_30)
-
-    # Districts with more D votes than R votes in 2018 US House race
-    d_votes = 0
-    for i in range(NUM_DIST):
-        if part["D votes"][i] > part["R votes"][i]:
-            d_votes += 1
-    d_ensemble.append(d_votes)
-
-print("Random walk complete.\n")
-
-# Histogram of number of cutedges in 2018 voting precincts
-plt.figure()
-plt.hist(cutedge_ensemble, edgecolor='black', color='purple')
-plt.xlabel("Cutedges", fontsize=12)
-plt.ylabel("Ensembles", fontsize=12)
-plt.title("Cutedges in 2018 Voting Precincts",
-          fontsize=14)
-plt.axvline(x=cutedges_enacted, color='orange', linestyle='--', linewidth=2,
-            label=f'cutedges_enacted = {cutedges_enacted}')
-plt.savefig("figs/histogram-cutedges.png")
-print("Saved figs/histogram-cutedges.png")
-
-# Histogram of number of Hispanic-30%+ districts from 2010 Census numbers
-plt.figure()
-plt.hist(h30_ensemble)
-plt.savefig("figs/histogram-hispanic.png")
-print("Saved figs/histogram-hispanic.png")
-
-# Specify boundaries between bins to make plot look a bit nicer
-plt.figure()
-plt.hist(h30_ensemble, bins=[-0.5, 0.5, 1.5, 2.5], edgecolor='black', color='orange')
-plt.xticks([0, 1, 2])
-plt.xlabel("Districts", fontsize=12)
-plt.ylabel("Ensembles", fontsize=12)
-plt.axvline(x=hisp_30_enacted, color='blue', linestyle='--', linewidth=2,
-            label=f'hisp_30_enacted = {hisp_30_enacted}')
-plt.title("Districts with >30% Hispanic Population in 2010 Census",
-          fontsize=14)
-plt.savefig("figs/histogram-hispanic-clean.png")
-print("Saved figs/histogram-hispanic-clean.png. You should double check the bins.")
-
-# Histogram of number of Democratic districts in US House race
-plt.figure()
-plt.hist(d_ensemble)
-plt.savefig("figs/histogram-democrats.png")
-print("Saved figs/histogram-democrats.png")
-
-# Specify boundaries between bins to make plot look a bit nicer
-plt.figure()
-plt.hist(d_ensemble, bins=[2.5, 3.5, 4.5, 5.5, 6.5], edgecolor='black', color='blue')
-plt.xticks([3, 4, 5, 6])
-plt.xlabel("Districts", fontsize=12)
-plt.ylabel("Ensembles", fontsize=12)
-plt.axvline(x=d_votes_enacted, color='orange', linestyle='--', linewidth=2,
-            label=f'd_votes_enacted = {d_votes_enacted}')
-plt.title("Democratic Districts in the 2018 Midterm Elections", fontsize=14)
-plt.savefig("figs/histogram-democrats-clean.png")
-print("Saved figs/histogram-democrats-clean.png. You should double check the bins.")
-
-# TODO: make boxplots
-# TODO: make a series of histograms to show approaching stationary distribution
-# TODO: change the coordinate reference system in the geodataframe
-# TODO: run once from enacted plan and once from random plan
+run_random_walk()
+run_random_walk(enacted = False)
 
 PATH_21_dir = "data/2021_Approved_Congressional_Plan_with_Final_Adjustments"
 PATH_21 = PATH_21_dir + "/2021_Approved_Congressional_Plan_w_Final_Adjustments.shp"
+print(f"\n2021 shapefile path: {PATH_21}\n")
 
 # Dual graph from shapefile
-# print("2021 Graph")
+print("Loading 2021 graph...")
 graph_21 = Graph.from_file(PATH_21)
+print("2021 graph loaded.\n")
 
-# print("Is this dual graph connected? ", nx.is_connected(graph_21))
-# print("Is this dual graph planar? ", nx.is_planar(graph_21))
-# print("Number of Nodes: ", len(graph_21.nodes()))
-# print("Number of Edges: ", len(graph_21.edges()))
+print(f"Is the 2021 dual graph connected? {nx.is_connected(graph_21)}")
+print(f"Is the 2021 dual graph planar? {nx.is_planar(graph_21)}")
+print(f"Number of Nodes: {len(graph_21.nodes())}")
+print(f"Number of Edges: {len(graph_21.edges())}")
 
-# print("Information at Nodes: ", graph_21.nodes()[0].keys())
+print(f"Graph columns: {graph_21.nodes()[0].keys()}\n")
 # dict_keys(['boundary_node', 'area', 'OBJECTID', 'District', 'Shape_Leng', 'Shape_Le_1',
 # 'Shape_Area', 'geometry'])
 
 # Geodataframe from shapefile
-# print("2021 Geodataframe")
+print("Loading 2021 Geodataframe...")
 gdf_21 = gpd.read_file(PATH_21)
-# print(f"shapefile columns: {gdf_21.columns}")
+print("2021 geodataframe loaded.\n")
+print(f"2021 shapefile columns: {gdf_21.columns}\n")
 
 # Plot the new plan
 plt.figure()
 gdf_21.plot(cmap='tab10')
 plt.title('Congressional Districts Today', fontsize=14)
 plt.axis('off')
-plt.xticks([])
-plt.yticks([])
 plt.savefig("figs/2021-congressional-districts.png")
 print("Saved figs/2021-congressional-districts.png")
