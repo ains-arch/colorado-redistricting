@@ -14,11 +14,11 @@ Due to availability of data, this ensemble analysis focuses on
 7 congressional seats, made up of Census enumeration districts
 
 ## Who draws them?
-Colorado General Assembly
-committee comprised of members of both chambers with equal split in party membership
-With staff members, it was a 5-5-1 R-D-I split.
-Governor of Colorado (Democrat John Hickenlooper) had veto power over the bills
-Ultimately, because the Assembly failed to pass a map by the deadline, the redistricting process
+* Colorado General Assembly
+* committee comprised of members of both chambers with equal split in party membership
+* With staff members, it was a 5-5-1 R-D-I split.
+* Governor of Colorado (Democrat John Hickenlooper) had veto power over the bills
+* Ultimately, because the Assembly failed to pass a map by the deadline, the redistricting process
 went to court.
 
 ## Legal challenges?
@@ -40,7 +40,16 @@ The lines have since been redrawn after the 2020 census to reflect Colorado's ne
 representative.
 
 # Findings
-jpgs go here
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2021-congressional-districts.jpg alt="Congressional Districts Today"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
 
 ## Explanation
 
