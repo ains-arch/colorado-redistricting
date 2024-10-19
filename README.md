@@ -1,4 +1,4 @@
-# Introduction
+# Colorado 2012 Congressional Redistricting Ensemble Analysis ![](https://github.com/ains-arch/colorado-redistricting/workflows/tests/badge.svg)
 In this report, we detail an ensemble analysis of Colorado's 2012 congressional districting plan
 based on data from 2018 midterm elections. This plan redistricted the state into 7 US House
 districts based on data from the 2010 Census.
