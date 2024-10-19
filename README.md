@@ -11,52 +11,98 @@ Due to availability of data, this ensemble analysis focuses on
 
 # Background
 ## How many districts?
-7 congressional seats, made up of Census enumeration districts
+Colorado had 7 congressional seats after the 2010 Census and 2012 redistricting process. The
+districts are made up of Census enumeration districts. The 2020 Census/2021 redistricting process
+gave Colorado one more congressional seat to make eight total, but that is after the data this
+report handles.
+
+<img src=figs/2012-congressional-districts.png/>
+
+<img src=figs/2021-congressional-districts.png/>
 
 ## Who draws them?
-* Colorado General Assembly
-* committee comprised of members of both chambers with equal split in party membership
-* With staff members, it was a 5-5-1 R-D-I split.
-* Governor of Colorado (Democrat John Hickenlooper) had veto power over the bills
-* Ultimately, because the Assembly failed to pass a map by the deadline, the redistricting process
-went to court.
+In 2012, the Colorado General Assembly was responsible for drawing districts. It created a committee
+comprised of members of both chambers with an equal split in party membership. With staff members,
+the districting commission was a 5-5-1 split between Republicans, Democrats, and Independents.
+Because the plans ultimately followed the rules of normal assembly bills, the Governor of Colorado
+(at the time, Democrat John Hickenlooper) had veto power over the bills. However, because the
+Assembly failed to pass a map by the deadline, the redistricting process went to court.
 
 ## Legal challenges?
 The redistricting process in the legislative session was a mess that failed to reach any common
 ground on maps by Sine Die. Both major parties filed suit, as well as the Colorado Hispanic Bar
 Association and Colorado Latino Forum. Cases were consolidated, deadlines for maps from the major
-parties and other groups on the lawsuit were set. The court considered a half dozen maps and
-approved the Moreno/South Democratic map, praising it for maximizing competitiveness, current
-communities of interest, and "the real possibility that voters will be as engaged in the electoral
-process as possible."
+parties and other groups on the lawsuit were set. The court considered a half dozen maps, including
+ones submitted by the Colorado Hispanic Bar Association and Colorado Latino Forum. Elsewhere in the
+process, in the drawing of state house districts, a plan was praised for creating districts with
+more than 30% Hispanic population, over the state population metric of 20%.
 
-Republicans filed an appeal, but the ruling was upheld in the state Supreme Court, dismissing the
-argument that the map was bad because it cut up too many counties into multiple districts. The final
-map created three competitive Congressional races. Legislative reform was proposed after the
-redistricting process was completed.
+<img src=figs/hispanic.png/>
+
+<img src=figs/hispanic_cd.png/>
+
+The court eventually approved the Moreno/South Democratic map, praising it for maximizing
+competitiveness, current communities of interest, and "the real possibility that voters will be as
+engaged in the electoral process as possible." However, this plan did not include any districts with
+more than 30% Hispanic population.
+
+<img src=figs/party.png/>
+
+<img src=figs/party_cd.png/>
+
+Republicans filed an appeal, but the ruling was upheld in the state Supreme Court, dismissing their
+argument that the map failed because it cut up too many counties into multiple districts. The final
+map created three competitive Congressional races. 
 
 ## Redrawing of lines recently?
-The lines have since been redrawn after the 2020 census to reflect Colorado's new eighth
-representative.
+Legislative reform was proposed after the redistricting process was completed, and the redistricting
+process after the 2020 Census looked very different in procedure. It included a district for
+Colorado's new eighth representative.
 
 # Findings
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2021-congressional-districts.jpg alt="Congressional Districts Today"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
-<img width=100% src=2012-congressional-districts.jpg alt="Congressional Districts in 2018"/>
+This report includes data from an ensemble analysis of possible congressional district maps that
+could have been drawn after the 2010 census. It was run for 10,000 steps. This mixing time is
+sufficient, as can be shown in the similarity of the following histograms of cutedges, one that
+began its random walk from the true enacted plan, and one that began from a randomly generated plan.
 
-## Explanation
+<img src=figs/histogram-cutedges-from-enacted.png/>
 
-## Strengths of my conclusions
+<img src=figs/histogram-cutedges-from-random.png/>
 
-## Weaknesses of my conclusions
+The rest of the data is from the random walk that began with the enacted plan. The ensemble analysis
+focused on two aspects of the prospective plans: competitiveness as shown through the number of
+congressional Democrats would have won under the plan in the 2018 midterm elections, and Hispanic
+population shown through number of districts with a 30% or higher Hispanic population.
 
-## Limitations to my analysis
+The histogram of Democratic districts shows that the enacted plan's true outcome of four Democratic
+is expected from the ensemble.
+<img src=figs/histogram-democrats-clean.png/>
 
+The histogram of districts with more than 30% Hispanic population, however, shows that 0 districts,
+while possible, is not the most likely option.
 
+<img src=figs/histogram-hispanic-clean.png/>
+
+This is further supported by the boxplot, where a greater than expected Hispanic population in the
+third lowest district is countered by a lower than expected Hispanic population in the highest
+percent district. This could imply cracking and packing behavior.
+
+<img src=figs/boxplot-hispanic-styled.png/>
+
+## Discussion
+The ensemble analysis shows that the enacted plan is not precisely the average of the plans, but it
+is still well within the possible options. While gerrymandering is possible, a more likely
+explanation for this deviation from the mean is the choice of the redistricting committee to focus
+on building the districts of existing localities, like maintaining county lines and continuity from
+the previous plan. This, together with less advanced technology for doing statistical generation of
+districting maps, would likely lead to a plan that deviates from these statistics without being
+sufficient to suggest foul play. Additionally, the cutedges number of 532 for the enacted plan,
+which is much lower than the average of the ensemble, suggests a focus on compactness more than
+would be generated by a random sample.
+
+## Future work
+Further analysis of the partisan makeup of the districts, and the outcomes that different
+districting plans would lead to in more elections, could add more weight to suggesting a partisan
+gerrymander. Specifically, a boxplot for partisan percentages would be useful; this was not done in
+this analysis due to a less well-defined "total population" for total votes cast or total party
+membership in the data.

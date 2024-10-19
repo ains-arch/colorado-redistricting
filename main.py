@@ -1,6 +1,7 @@
 from functools import partial
 import warnings
 import networkx as nx
+import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import geopandas as gpd
@@ -239,6 +240,7 @@ def run_random_walk(enacted = True):
     if flag == "enacted": # Skip calculating Hispanic and Democratic ensembles for random start
         h30_ensemble = []
         d_ensemble = []
+        hpop = []
     
     for part in our_random_walk:
         # Add cutedges to cutedges ensemble
@@ -247,18 +249,22 @@ def run_random_walk(enacted = True):
         if flag == "enacted": # Run the full ensemble for the enacted plan
             hisp_30 = 0
             d_votes = 0
+            hpop_this_step = []
 
             for district in part.parts:
                 # 30%+ Hispanic districts from US Census
                 h_perc = part["Hispanic population"][district]/part["population"][district]
                 if h_perc > 0.3:
                     hisp_30 += 1
+                hpop_this_step.append(h_perc)
 
                 # Districts with more D votes than R votes in 2018 US House race
                 if part["D votes"][district] > part["R votes"][district]:
                     d_votes += 1
 
             h30_ensemble.append(hisp_30)
+            hpop_this_step.sort()
+            hpop.append(hpop_this_step)
             d_ensemble.append(d_votes)
     
     print("Random walk complete.\n")
@@ -320,11 +326,33 @@ def run_random_walk(enacted = True):
     plt.title("Democratic Districts in the 2018 Midterm Elections", fontsize=14)
     plt.savefig("figs/histogram-democrats-clean.png")
     print("Saved figs/histogram-democrats-clean.png. You should double check the bins.\n")
-    
-    # TODO: make boxplots
-    # TODO: make a series of histograms to show approaching stationary distribution
-    # TODO: change the coordinate reference system in the geodataframe
-    # TODO: run once from enacted plan and once from random plan
+
+    # Make bopxlot
+    a = np.array(hpop)
+    district_stats_sorted = district_stats.sort_values('hisp_perc_cd')
+    sorted_hpop = district_stats_sorted['hisp_perc_cd'].values
+    plt.figure()
+    plt.boxplot(a)
+    plt.scatter(x = range(1, NUM_DIST + 1), y=sorted_hpop, color="red")
+    plt.savefig("figs/boxplot-hispanic.png")
+
+    plt.figure()
+    plt.boxplot(a, patch_artist=True, 
+            boxprops=dict(facecolor='orange', color='black'),
+            medianprops=dict(color='blue', linewidth=2),
+            whiskerprops=dict(color='black', linewidth=1),
+            capprops=dict(color='black', linewidth=1),
+            zorder=1)
+    plt.scatter(x=range(1, NUM_DIST + 1), y=sorted_hpop, color="red", label="Enacted plan",
+                zorder=2)
+    plt.axhline(y=0.3, color='blue', linestyle='--', linewidth=2, label="30% threshold")
+    plt.xticks(range(1, NUM_DIST + 1), fontsize=12)
+    plt.yticks(fontsize=12)
+    plt.xlabel("Districts", fontsize=12)
+    plt.ylabel("Hispanic Percentage", fontsize=12)
+    plt.title("Hispanic Population Distribution by District", fontsize=14)
+    plt.legend()
+    plt.savefig("figs/boxplot-hispanic-styled.png")
 
 run_random_walk()
 run_random_walk(enacted = False)
