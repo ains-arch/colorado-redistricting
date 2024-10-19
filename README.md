@@ -127,5 +127,10 @@ $ source venv/bin/activate
 $ pip install --upgrade pip
 $ pip3 install -r requirements.txt
 ```
-Then you will be able to run `main.py` for a dev run of 100 steps of the random walk. You can change
-the number of steps on line 234 of `main.py`.
+
+To exactly reproduce the results in this report, run:
+```
+$ python3 main.py --total_steps 10000
+```
+This is a computationally intensive task, so taking steps to prevent canceled processes is
+recommended.

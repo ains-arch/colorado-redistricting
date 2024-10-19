@@ -1,5 +1,7 @@
 from functools import partial
 import warnings
+import argparse
+import random
 import networkx as nx
 import numpy as np
 import matplotlib.pyplot as plt
@@ -12,6 +14,25 @@ from gerrychain.proposals import recom
 from gerrychain.accept import always_accept
 
 warnings.filterwarnings("ignore") # Suppress warnings about NA values
+
+# To reproduce results
+import random
+random.seed(188923)
+
+# Set up argument parser
+parser = argparse.ArgumentParser(description="Run random walk with a specified number of steps.")
+parser.add_argument(
+    '--total_steps', 
+    type=int, 
+    default=100, 
+    help='The total number of steps for the random walk (default: 100)'
+)
+
+# Parse the arguments
+args = parser.parse_args()
+
+# Use the total_steps argument in your code
+total_steps = args.total_steps
 
 # Set path to shapefile
 PATH = "data/2018_precincts/co_precincts.shp"
@@ -231,7 +252,7 @@ def run_random_walk(enacted = True):
             constraints = [population_constraint],
             accept = always_accept, # accepts every proposed plan that meets population criteria
             initial_state = initial_partition,
-            total_steps = 10000 # change to 10000 for prod
+            total_steps = total_steps
             )
     
     # Run the random walk
