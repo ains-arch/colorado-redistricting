@@ -1,5 +1,6 @@
 # Colorado 2012 Congressional Redistricting Ensemble Analysis
 [![](https://github.com/ains-arch/colorado-redistricting/actions/workflows/test.yml/badge.svg)](https://github.com/ains-arch/colorado-redistricting/actions/workflows/test.yml)
+
 In this report, we detail an ensemble analysis of Colorado's 2012 congressional districting plan
 based on data from 2018 midterm elections. This plan redistricted the state into 7 US House
 districts based on data from the 2010 Census.
@@ -126,3 +127,5 @@ $ source venv/bin/activate
 $ pip install --upgrade pip
 $ pip3 install -r requirements.txt
 ```
+Then you will be able to run `main.py` for a dev run of 100 steps of the random walk. You can change
+the number of steps on line 234 of `main.py`.
