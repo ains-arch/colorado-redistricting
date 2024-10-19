@@ -1,13 +1,18 @@
-# Intro
-Ensemble analysis of Colorado's congressional districting plan based on data from 2018 midterm
-elections. Colorado had 7 US House districts in 2018.
+# Introduction
+In this report, we detail an ensemble analysis of Colorado's 2012 congressional districting plan
+based on data from 2018 midterm elections. This plan redistricted the state into 7 US House
+districts based on data from the 2010 Census.
 
 Due to availability of data, this ensemble analysis focuses on
-1. the US House map in 2018 compiled by MGGG
+1. the US House map in 2018 compiled by [MGGG](https://github.com/mggg-states/CO-shapefiles)
     1. 2018 Colorado precinct shapefile from Todd Bleess of the Colorado State Demographer's Office
     1. election data from the Colorado Secretary of State's Office
     1. 2010 Decennial Census demographic data
-1. information about the 2012 redistricting processes from Ballotpedia
+1. information about the 2012 redistricting processes from
+   [Ballotpedia](https://ballotpedia.org/Redistricting_in_Colorado_after_the_2010_census)
+
+This ensemble analysis is implemented using Gerrychain and focuses on 2018 US House race outcomes
+and Hispanic populations in the possible districts.
 
 # Background
 ## How many districts?
@@ -29,22 +34,25 @@ Because the plans ultimately followed the rules of normal assembly bills, the Go
 Assembly failed to pass a map by the deadline, the redistricting process went to court.
 
 ## Legal challenges?
-The redistricting process in the legislative session was a mess that failed to reach any common
-ground on maps by Sine Die. Both major parties filed suit, as well as the Colorado Hispanic Bar
-Association and Colorado Latino Forum. Cases were consolidated, deadlines for maps from the major
-parties and other groups on the lawsuit were set. The court considered a half dozen maps, including
-ones submitted by the Colorado Hispanic Bar Association and Colorado Latino Forum. Elsewhere in the
-process, in the drawing of state house districts, a plan was praised for creating districts with
-more than 30% Hispanic population, over the state population metric of 20%.
+The redistricting process was mired by partisan conflict that led to the committee failing to reach
+any common ground on maps by the end of the legislative session. Both major parties filed suit, as
+well as the Colorado Hispanic Bar Association and Colorado Latino Forum. Cases were consolidated,
+deadlines for maps from the major parties and other groups on the lawsuit were set.
+
+The court considered a half dozen maps, including ones submitted by the aforementioned Colorado
+Hispanic Bar Association and Colorado Latino Forum. Elsewhere in the process, in the drawing of
+state house districts, a plan was praised for creating districts with more than 30% Hispanic
+population, over the state population metric of 20%. This gives the basis for 30% Hispanic aspect of
+the ensemble analysis, detailed below.
 
 <img src=figs/hispanic.png/>
 
 <img src=figs/hispanic_cd.png/>
 
-The court eventually approved the Moreno/South Democratic map, praising it for maximizing
-competitiveness, current communities of interest, and "the real possibility that voters will be as
-engaged in the electoral process as possible." However, this plan did not include any districts with
-more than 30% Hispanic population.
+The court eventually approved one of the maps proposed by the Democratic party arm of the committee,
+praising it for maximizing competitiveness, current communities of interest, and "the real
+possibility that voters will be as engaged in the electoral process as possible." However, this plan
+did not include any districts with more than 30% Hispanic population.
 
 <img src=figs/party.png/>
 
