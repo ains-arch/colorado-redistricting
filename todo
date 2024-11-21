@@ -10,5 +10,49 @@ proof of mixing through something other than cutedges
 
 use state-wide elections not house data as a proxy for voter partisanship
 - explain it's because uncontested/weak challenges
+- this is why beth used the state treasurer's race
 
 - note something about how land doesn't vote
+
+- proportion of democratic votes vs ks statistic, from two different starting plans
+- look at least democratic district, sort by least to most (runs from 0.35 to 0.45% dem)
+- produces CDF
+
+colorado in context: congressional redistricting and competing fairness criteria in colorado
+
+colorado laws requires more competitive districts - does that create more dem districts?
+- governors race (weight factor 20)
+- if you take number of competitive districts as independent variable, you'll get fewer democratic
+  seats
+- but if you take number of democratic seats as the independent variable, you'll have more
+  competitive districts at lots and little number of seats
+
+is it a gerrymander?
+- no!
+- looked at state treasurer race
+
+colorado has open primaries! if your reg dem, you can only vote in dem, but if you're unaffiliated,
+you can vote in either (one). they're mostly dem, but you can't tell from party registration <3
+certified Nevada Independent Moment
+
+commissions
+- selected through frankly bananas rules
+
+congressional districts have to be equal to one (1) person
+- ensembles can be not that, but you'd have to balance them
+- but for colorado congressional, its 5%
+- communities of interest: not political party! everyone who works at a mine, everyone who goes to a
+  school, have to be able to draw it on a map and explain how laws would affect them
+- political subdivisions: counties, towns, maybe school districts
+- as compact as reasonably possible (undefined)
+- maximize for politically competitive
+- beth defined this in research
+- cannot: protect any party, candidate, or incumbent: we've Outlawed Partisan Gerrymandering!
+
+collapsed nodes
+- small <10,000 people counties
+- communities of interest
+
+colorado independents
+- you can run it on registration, but you shouldn't; you should focus on election outcomes due to
+  the weirdness of party registration rules
